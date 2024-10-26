@@ -29,8 +29,6 @@ export default function Home() {
     // Get the active peers
     getPeers()
 
-    // On the client, get the peer id and username from local storage
-    const id = localStorage.getItem("peerId")
     const name = localStorage.getItem("username")
 
     if (name) {
