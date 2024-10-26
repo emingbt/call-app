@@ -8,7 +8,6 @@ import Link from "next/link"
 
 export default function Home() {
   const [username, setUsername] = useState("")
-  const [peerId, setPeerId] = useState("")
   const [currentRoom, setCurrentRoom] = useState("")
   const [activePeers, setActivePeers] = useState<Record<string, string[]>>({})
   const [error, setError] = useState("")
@@ -34,8 +33,7 @@ export default function Home() {
     const id = localStorage.getItem("peerId")
     const name = localStorage.getItem("username")
 
-    if (id && name) {
-      setPeerId(id)
+    if (name) {
       setUsername(name)
 
       const roomCode = localStorage.getItem("roomCode")
@@ -68,11 +66,18 @@ export default function Home() {
   }
 
   const handleJoinRoom = async (roomCode: string) => {
+    // Create a new peer
+    const peer = new Peer()
+
+    // Wait for the peer to open
+    await new Promise((resolve) => peer.on("open", resolve))
+    setUserPeer(peer)
+
     // Join the room
     localStorage.setItem("roomCode", roomCode)
     setCurrentRoom(roomCode)
 
-    const peersToCall = await joinRoom(roomCode, peerId, username)
+    const peersToCall = await joinRoom(roomCode, peer.id || "", username)
     const peerNames = Object.keys(peersToCall)
 
     setActivePeers((prev) => ({
@@ -80,7 +85,7 @@ export default function Home() {
       [roomCode]: peerNames
     }))
 
-    const peerIdsToCall = Object.values(peersToCall).filter((peer) => peer !== peerId)
+    const peerIdsToCall = Object.values(peersToCall).filter((peerId) => peerId !== peer.id)
 
     // Get the media stream
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -97,8 +102,6 @@ export default function Home() {
     streamRef.current = stream
 
     // Become available to call
-    const peer = new Peer(peerId)
-    setUserPeer(peer)
 
     peer.on("call", async (call) => {
       const peersInRoom = await getPeersByRoom(roomCode) || {}
