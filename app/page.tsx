@@ -64,6 +64,17 @@ export default function Home() {
   }
 
   const handleJoinRoom = async (roomCode: string) => {
+    if (currentRoom) {
+      await exitRoom(currentRoom, username)
+
+      // Close the peer connections
+      userPeer?.removeAllListeners()
+      userPeer?.disconnect()
+      userPeer?.destroy()
+
+      await getAllActivePeers()
+    }
+
     // Create a new peer
     const peer = new Peer()
 
