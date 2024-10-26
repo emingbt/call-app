@@ -23,7 +23,7 @@ export default function Home() {
 
   useEffect(() => {
     async function getPeers() {
-      await getActivePeers()
+      await getAllActivePeers()
     }
 
     // Get the active peers
@@ -164,10 +164,10 @@ export default function Home() {
     userPeer?.destroy()
 
     setCurrentRoom("")
-    await getActivePeers()
+    await getAllActivePeers()
   }
 
-  const getActivePeers = async () => {
+  const getAllActivePeers = async () => {
     // Get the active peers
     for (const room of rooms) {
       const peers = await getPeersByRoom(room)
