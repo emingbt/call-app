@@ -102,7 +102,6 @@ export default function Home() {
     streamRef.current = stream
 
     // Become available to call
-
     peer.on("call", async (call) => {
       const peersInRoom = await getPeersByRoom(roomCode) || {}
       setActivePeers((prev) => ({
@@ -166,6 +165,10 @@ export default function Home() {
       console.log("Peers in room", room, peers)
 
       if (peers === null) {
+        setActivePeers((prev) => ({
+          ...prev,
+          [room]: []
+        }))
         continue
       }
 
