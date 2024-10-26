@@ -62,7 +62,8 @@ export default function Home() {
       localStorage.setItem("username", username)
     }
     catch (error) {
-      setError("Error creating peer")
+      console.error("Failed to create user", error)
+      setError("Failed to create user")
     }
   }
 
