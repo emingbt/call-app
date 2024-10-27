@@ -75,6 +75,8 @@ export default function Home() {
       await getAllActivePeers()
     }
 
+    setIsMicOn(true)
+
     // Create a new peer
     const peer = new Peer()
 
