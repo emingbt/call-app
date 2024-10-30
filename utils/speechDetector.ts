@@ -1,4 +1,4 @@
-export default function useSpeechDetector({ stream, setAudioProcessor, setIsSpeaking }: {
+export default function SpeechDetector({ stream, setAudioProcessor, setIsSpeaking }: {
   stream: MediaStream,
   setAudioProcessor: React.Dispatch<React.SetStateAction<ScriptProcessorNode | undefined>>,
   setIsSpeaking: React.Dispatch<React.SetStateAction<boolean>>

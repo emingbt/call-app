@@ -5,7 +5,7 @@ import Peer from "peerjs"
 import { exitRoom, getPeersByRoom, joinRoom } from "@/utils/redis"
 import Room from "@/components/room"
 import Link from "next/link"
-import useSpeechDetector from "@/utils/speechDetector"
+import SpeechDetector from "@/utils/speechDetector"
 import useDetectAfk from "@/utils/detectAfk"
 import useDetectTabClose from "@/utils/detectTabClose"
 
@@ -119,8 +119,9 @@ export default function Home() {
 
     // If there is a stream, set up the speech detector
     if (streamRef.current) {
-      useSpeechDetector({ stream: streamRef.current, setAudioProcessor, setIsSpeaking })
+      SpeechDetector({ stream: streamRef.current, setAudioProcessor, setIsSpeaking })
     }
+
     // Become available to call
     peer.on("call", async (call) => {
       const peersInRoom = await getPeersByRoom(roomCode) || {}
