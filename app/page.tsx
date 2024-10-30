@@ -5,6 +5,8 @@ import Peer from "peerjs"
 import { exitRoom, getPeersByRoom, joinRoom } from "@/utils/redis"
 import Room from "@/components/room"
 import Link from "next/link"
+import useSpeechDetector from "@/utils/speechDetector"
+import useDetectAfk from "@/utils/detectAfk"
 
 export default function Home() {
   const [username, setUsername] = useState("")
@@ -12,6 +14,8 @@ export default function Home() {
   const [activePeers, setActivePeers] = useState<Record<string, string[]>>({})
   const [error, setError] = useState("")
   const [isMicOn, setIsMicOn] = useState(true)
+  const [audioProcessor, setAudioProcessor] = useState<ScriptProcessorNode>()
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   const [userPeer, setUserPeer] = useState<Peer>()
   const streamRef = useRef<MediaStream | null>(null)
@@ -112,6 +116,10 @@ export default function Home() {
 
     streamRef.current = stream
 
+    // If there is a stream, set up the speech detector
+    if (streamRef.current) {
+      useSpeechDetector({ stream: streamRef.current, setAudioProcessor, setIsSpeaking })
+    }
     // Become available to call
     peer.on("call", async (call) => {
       const peersInRoom = await getPeersByRoom(roomCode) || {}
@@ -160,11 +168,25 @@ export default function Home() {
     // Remove the room code
     localStorage.removeItem("roomCode")
 
-    // const peer = new Peer(peerId)
+    if (audioProcessor) {
+      audioProcessor.onaudioprocess = null
+    }
+
+    if (streamRef.current) {
+      console.log("Stopping the stream")
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop()
+      })
+
+      streamRef.current = null
+    }
+
+
     userPeer?.removeAllListeners()
     userPeer?.disconnect()
     userPeer?.destroy()
 
+    setIsSpeaking(false)
     setCurrentRoom("")
     await getAllActivePeers()
   }
@@ -201,6 +223,7 @@ export default function Home() {
     }
   }
 
+  useDetectAfk(isSpeaking, currentRoom, handleExitRoom)
   if (username) {
     return (
       <div className="w-full min-h-screen flex relative items-center justify-center bg-main-bg">
