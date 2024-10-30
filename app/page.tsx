@@ -7,6 +7,7 @@ import Room from "@/components/room"
 import Link from "next/link"
 import useSpeechDetector from "@/utils/speechDetector"
 import useDetectAfk from "@/utils/detectAfk"
+import useDetectTabClose from "@/utils/detectTabClose"
 
 export default function Home() {
   const [username, setUsername] = useState("")
@@ -169,6 +170,7 @@ export default function Home() {
     localStorage.removeItem("roomCode")
 
     if (audioProcessor) {
+      audioProcessor.disconnect()
       audioProcessor.onaudioprocess = null
     }
 
@@ -224,6 +226,7 @@ export default function Home() {
   }
 
   useDetectAfk(isSpeaking, currentRoom, handleExitRoom)
+  useDetectTabClose(handleExitRoom, currentRoom)
   if (username) {
     return (
       <div className="w-full min-h-screen flex relative items-center justify-center bg-main-bg">
@@ -248,7 +251,7 @@ export default function Home() {
         <div className="w-full h-20 flex justify-center absolute bottom-0">
           <div className="w-56 lg:w-96 h-full flex items-center justify-around bg-lightest-bg rounded-t-xl">
             <button
-              className="w-24 p-4 text-white bg-main-bg font-bold rounded-lg hover:bg-opacity-80"
+              className={`w-24 p-4 text-white ${isSpeaking ? "bg-green-500" : "bg-main-bg"} font-bold rounded-lg hover:bg-opacity-80 transition-colors`}
               type="button"
               onClick={toggleMicrophone}
             >
