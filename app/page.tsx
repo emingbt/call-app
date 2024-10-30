@@ -5,6 +5,9 @@ import Peer from "peerjs"
 import { exitRoom, getPeersByRoom, joinRoom } from "@/utils/redis"
 import Room from "@/components/room"
 import Link from "next/link"
+import SpeechDetector from "@/utils/speechDetector"
+import useDetectAfk from "@/utils/detectAfk"
+import useDetectTabClose from "@/utils/detectTabClose"
 
 export default function Home() {
   const [username, setUsername] = useState("")
@@ -12,6 +15,8 @@ export default function Home() {
   const [activePeers, setActivePeers] = useState<Record<string, string[]>>({})
   const [error, setError] = useState("")
   const [isMicOn, setIsMicOn] = useState(true)
+  const [audioProcessor, setAudioProcessor] = useState<ScriptProcessorNode>()
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   const [userPeer, setUserPeer] = useState<Peer>()
   const streamRef = useRef<MediaStream | null>(null)
@@ -112,6 +117,11 @@ export default function Home() {
 
     streamRef.current = stream
 
+    // If there is a stream, set up the speech detector
+    if (streamRef.current) {
+      SpeechDetector({ stream: streamRef.current, setAudioProcessor, setIsSpeaking })
+    }
+
     // Become available to call
     peer.on("call", async (call) => {
       const peersInRoom = await getPeersByRoom(roomCode) || {}
@@ -160,11 +170,26 @@ export default function Home() {
     // Remove the room code
     localStorage.removeItem("roomCode")
 
-    // const peer = new Peer(peerId)
+    if (audioProcessor) {
+      audioProcessor.disconnect()
+      audioProcessor.onaudioprocess = null
+    }
+
+    if (streamRef.current) {
+      console.log("Stopping the stream")
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop()
+      })
+
+      streamRef.current = null
+    }
+
+
     userPeer?.removeAllListeners()
     userPeer?.disconnect()
     userPeer?.destroy()
 
+    setIsSpeaking(false)
     setCurrentRoom("")
     await getAllActivePeers()
   }
@@ -201,6 +226,8 @@ export default function Home() {
     }
   }
 
+  useDetectAfk(isSpeaking, currentRoom, handleExitRoom)
+  useDetectTabClose(handleExitRoom, currentRoom)
   if (username) {
     return (
       <div className="w-full min-h-screen flex relative items-center justify-center bg-main-bg">
@@ -225,7 +252,7 @@ export default function Home() {
         <div className="w-full h-20 flex justify-center absolute bottom-0">
           <div className="w-56 lg:w-96 h-full flex items-center justify-around bg-lightest-bg rounded-t-xl">
             <button
-              className="w-24 p-4 text-white bg-main-bg font-bold rounded-lg hover:bg-opacity-80"
+              className={`w-24 p-4 text-white ${isSpeaking ? "bg-green-500" : "bg-main-bg"} font-bold rounded-lg hover:bg-opacity-80 transition-colors`}
               type="button"
               onClick={toggleMicrophone}
             >
