@@ -5,7 +5,7 @@ export default function useDetectAfk(
   currentRoom: string,
   handleExitRoom: () => void
 ) {
-  const maximumTimeofInactivity = 10000 // 10 seconds
+  const maximumTimeofInactivity = 1000 * 600 // 10 minutes
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
