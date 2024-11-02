@@ -26,6 +26,12 @@ export default function Home() {
     "Toplantı Odası"
   ]
 
+  const joiningRoomSound = new Audio("/sounds/discord-join-sound.mp3")
+  const leavingRoomSound = new Audio("/sounds/discord-leave-room-sound.mp3")
+  const peerLeavingRoomSound = new Audio("/sounds/discord-leave-sound.mp3")
+  const muteSound = new Audio("/sounds/discord-mute-sound.mp3")
+  const unmuteSound = new Audio("/sounds/discord-unmute-sound.mp3")
+
   useEffect(() => {
     async function getPeers() {
       await getAllActivePeers()
@@ -72,6 +78,9 @@ export default function Home() {
     if (currentRoom) {
       await exitRoom(currentRoom, username)
 
+      // Play the leaving room sound
+      peerLeavingRoomSound.play()
+
       // Close the peer connections
       userPeer?.removeAllListeners()
       userPeer?.disconnect()
@@ -92,6 +101,9 @@ export default function Home() {
     // Join the room
     localStorage.setItem("roomCode", roomCode)
     setCurrentRoom(roomCode)
+
+    // Play the joining room sound
+    joiningRoomSound.play()
 
     const peersToCall = await joinRoom(roomCode, peer.id || "", username)
     const peerNames = Object.keys(peersToCall)
@@ -132,6 +144,9 @@ export default function Home() {
 
       call.answer(stream)
 
+      // Play the joining room sound
+      joiningRoomSound.play()
+
       call?.on("stream", (remoteStream) => {
         console.log("Playing audio", remoteStream)
         const audio = new Audio()
@@ -146,6 +161,9 @@ export default function Home() {
           ...prev,
           [roomCode]: Object.keys(peersInRoom) as string[]
         }))
+
+        // Play the leaving room sound
+        peerLeavingRoomSound.play()
       })
     })
 
@@ -166,6 +184,9 @@ export default function Home() {
 
   const handleExitRoom = async () => {
     await exitRoom(currentRoom, username)
+
+    // Play the leaving room sound
+    leavingRoomSound.play()
 
     // Remove the room code
     localStorage.removeItem("roomCode")
@@ -222,6 +243,13 @@ export default function Home() {
       streamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !isMicOn
       })
+
+      if (isMicOn) {
+        muteSound.play()
+      } else {
+        unmuteSound.play()
+      }
+
       setIsMicOn(!isMicOn) // Toggle the microphone status
     }
   }
