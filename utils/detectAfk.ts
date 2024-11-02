@@ -11,7 +11,6 @@ export default function useDetectAfk(
   useEffect(() => {
     if (currentRoom === "") {
       if (timeoutRef.current) {
-        console.log("User is not in a room. Clearing the timeout")
         clearTimeout(timeoutRef.current)
       }
 
@@ -19,13 +18,11 @@ export default function useDetectAfk(
     }
 
     if (timeoutRef.current) {
-      console.log("Clearing the timeout")
       clearTimeout(timeoutRef.current)
     }
 
     if (!isSpeaking) {
       timeoutRef.current = setTimeout(() => {
-        console.log("User is inactive for 10 seconds")
         handleExitRoom()
       }, maximumTimeofInactivity)
     }

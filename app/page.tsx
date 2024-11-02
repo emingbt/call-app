@@ -196,7 +196,6 @@ export default function Home() {
     }
 
     if (streamRef.current) {
-      console.log("Stopping the stream")
       streamRef.current.getTracks().forEach((track) => {
         track.stop()
       })
@@ -218,7 +217,6 @@ export default function Home() {
     // Get the active peers
     for (const room of rooms) {
       const peers = await getPeersByRoom(room)
-      console.log("Peers in room", room, peers)
 
       if (peers === null) {
         setActivePeers((prev) => ({
@@ -255,6 +253,7 @@ export default function Home() {
 
   useDetectAfk(isSpeaking, currentRoom, handleExitRoom)
   useDetectTabClose(handleExitRoom, currentRoom)
+
   if (username) {
     return (
       <div className="w-full min-h-screen flex relative items-center justify-center bg-main-bg">
