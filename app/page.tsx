@@ -8,6 +8,7 @@ import Link from "next/link"
 import SpeechDetector from "@/utils/speechDetector"
 import useDetectAfk from "@/utils/detectAfk"
 import useDetectTabClose from "@/utils/detectTabClose"
+import { sounds } from "@/utils/sounds"
 
 export default function Home() {
   const [username, setUsername] = useState("")
@@ -25,12 +26,6 @@ export default function Home() {
     "Meydan",
     "Toplantı Odası"
   ]
-
-  const joiningRoomSound = new Audio("/sounds/discord-join-sound.mp3")
-  const leavingRoomSound = new Audio("/sounds/discord-leave-room-sound.mp3")
-  const peerLeavingRoomSound = new Audio("/sounds/discord-leave-sound.mp3")
-  const muteSound = new Audio("/sounds/discord-mute-sound.mp3")
-  const unmuteSound = new Audio("/sounds/discord-unmute-sound.mp3")
 
   useEffect(() => {
     async function getPeers() {
@@ -79,7 +74,7 @@ export default function Home() {
       await exitRoom(currentRoom, username)
 
       // Play the leaving room sound
-      peerLeavingRoomSound.play()
+      sounds.peerLeavesRoom?.play()
 
       // Close the peer connections
       userPeer?.removeAllListeners()
@@ -103,7 +98,7 @@ export default function Home() {
     setCurrentRoom(roomCode)
 
     // Play the joining room sound
-    joiningRoomSound.play()
+    sounds.joinRoom?.play()
 
     const peersToCall = await joinRoom(roomCode, peer.id || "", username)
     const peerNames = Object.keys(peersToCall)
@@ -145,7 +140,7 @@ export default function Home() {
       call.answer(stream)
 
       // Play the joining room sound
-      joiningRoomSound.play()
+      sounds.joinRoom?.play()
 
       call?.on("stream", (remoteStream) => {
         console.log("Playing audio", remoteStream)
@@ -163,7 +158,7 @@ export default function Home() {
         }))
 
         // Play the leaving room sound
-        peerLeavingRoomSound.play()
+        sounds.peerLeavesRoom?.play()
       })
     })
 
@@ -186,7 +181,7 @@ export default function Home() {
     await exitRoom(currentRoom, username)
 
     // Play the leaving room sound
-    leavingRoomSound.play()
+    sounds.leaveRoom?.play()
 
     // Remove the room code
     localStorage.removeItem("roomCode")
@@ -245,9 +240,9 @@ export default function Home() {
       })
 
       if (isMicOn) {
-        muteSound.play()
+        sounds.muteMic?.play()
       } else {
-        unmuteSound.play()
+        sounds.unmuteMic?.play()
       }
 
       setIsMicOn(!isMicOn) // Toggle the microphone status
