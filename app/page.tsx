@@ -8,6 +8,7 @@ import Link from "next/link"
 import SpeechDetector from "@/utils/speechDetector"
 import useDetectAfk from "@/utils/detectAfk"
 import useDetectTabClose from "@/utils/detectTabClose"
+import { sounds } from "@/utils/sounds"
 
 export default function Home() {
   const [username, setUsername] = useState("")
@@ -72,6 +73,9 @@ export default function Home() {
     if (currentRoom) {
       await exitRoom(currentRoom, username)
 
+      // Play the leaving room sound
+      sounds.peerLeavesRoom?.play()
+
       // Close the peer connections
       userPeer?.removeAllListeners()
       userPeer?.disconnect()
@@ -92,6 +96,9 @@ export default function Home() {
     // Join the room
     localStorage.setItem("roomCode", roomCode)
     setCurrentRoom(roomCode)
+
+    // Play the joining room sound
+    sounds.joinRoom?.play()
 
     const peersToCall = await joinRoom(roomCode, peer.id || "", username)
     const peerNames = Object.keys(peersToCall)
@@ -132,6 +139,9 @@ export default function Home() {
 
       call.answer(stream)
 
+      // Play the joining room sound
+      sounds.joinRoom?.play()
+
       call?.on("stream", (remoteStream) => {
         console.log("Playing audio", remoteStream)
         const audio = new Audio()
@@ -146,6 +156,9 @@ export default function Home() {
           ...prev,
           [roomCode]: Object.keys(peersInRoom) as string[]
         }))
+
+        // Play the leaving room sound
+        sounds.peerLeavesRoom?.play()
       })
     })
 
@@ -166,6 +179,9 @@ export default function Home() {
 
   const handleExitRoom = async () => {
     await exitRoom(currentRoom, username)
+
+    // Play the leaving room sound
+    sounds.leaveRoom?.play()
 
     // Remove the room code
     localStorage.removeItem("roomCode")
@@ -222,6 +238,13 @@ export default function Home() {
       streamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !isMicOn
       })
+
+      if (isMicOn) {
+        sounds.muteMic?.play()
+      } else {
+        sounds.unmuteMic?.play()
+      }
+
       setIsMicOn(!isMicOn) // Toggle the microphone status
     }
   }
