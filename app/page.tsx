@@ -178,6 +178,10 @@ export default function Home() {
   }
 
   const handleExitRoom = async () => {
+    if (!currentRoom) {
+      return
+    }
+
     await exitRoom(currentRoom, username)
 
     // Play the leaving room sound
@@ -192,7 +196,6 @@ export default function Home() {
     }
 
     if (streamRef.current) {
-      console.log("Stopping the stream")
       streamRef.current.getTracks().forEach((track) => {
         track.stop()
       })
@@ -214,7 +217,6 @@ export default function Home() {
     // Get the active peers
     for (const room of rooms) {
       const peers = await getPeersByRoom(room)
-      console.log("Peers in room", room, peers)
 
       if (peers === null) {
         setActivePeers((prev) => ({
@@ -251,11 +253,12 @@ export default function Home() {
 
   useDetectAfk(isSpeaking, currentRoom, handleExitRoom)
   useDetectTabClose(handleExitRoom, currentRoom)
+
   if (username) {
     return (
       <div className="w-full min-h-screen flex relative items-center justify-center bg-main-bg">
         <div className="p-4 absolute top-0 right-0">
-          <Link href={"/settings"} className="text-lg text-white font-bold">Settings</Link>
+          <Link href={"/settings"} onClick={handleExitRoom} className="text-lg text-white font-bold">Settings</Link>
         </div>
         <main className="flex flex-col items-center sm:items-start">
           <h1 className="w-full text-xl font-bold mb-8">Join a room - {username}</h1>
