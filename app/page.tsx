@@ -268,7 +268,7 @@ export default function Home() {
                 key={room}
                 className="w-56 lg:w-96 relative rounded-lg mb-4 text-white  bg-lightest-bg hover:bg-opacity-80"
                 type="button"
-                onClick={() => handleJoinRoom(room)}
+                onClick={() => room != currentRoom && handleJoinRoom(room)}
               >
                 <Room roomCode={room} activePeers={activePeers[room] as string[] || []} isCurrentRoom={room == currentRoom} />
               </button>
