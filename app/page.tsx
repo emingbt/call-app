@@ -113,7 +113,9 @@ export default function Home() {
     // Get the media stream
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
+        autoGainControl: true,
         echoCancellation: true,
+        noiseSuppression: true,
         sampleRate: 44100,
       },
     })
